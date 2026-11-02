@@ -1,0 +1,13 @@
+#!/bin/sh
+set -eu
+
+# launchd does not inherit the terminal's asdf setup.
+export PATH="/Users/camonz/.asdf/installs/elixir/1.20.4-otp-29/bin:/Users/camonz/.asdf/installs/erlang/29.0.1/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+export MIX_ENV=prod
+export MIX_HOME="/Users/camonz/.asdf/installs/elixir/1.20.4-otp-29/.mix"
+export MIX_ARCHIVES="$MIX_HOME/archives"
+
+knowline_project_dir=$(cd "$(dirname "$0")/.." && pwd)
+cd "$knowline_project_dir"
+exec mix run --no-compile --no-deps-check scripts/knowline_daemon.exs \
+  --port 46292 --model "$knowline_project_dir/models/knowline-4b-gen5.5-mlx-q5"

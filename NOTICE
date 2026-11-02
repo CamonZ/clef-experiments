@@ -1,0 +1,24 @@
+Clef native experiment
+
+Clef's record layout and joint decision head are adapted from the Cloudflare
+Clef release and TrevorJS's clef_mlx.py accompanying the 8-bit MLX conversion.
+These model files are distributed under Apache-2.0; see licenses/Clef-Apache-2.0.txt.
+https://huggingface.co/Cloudflare/clef-flash
+https://huggingface.co/TrevorJS/clef-flash-mlx-8bit
+
+Qwen3.5 backbone calculations and the GatedDeltaNet Metal recurrence are adapted
+from Apple's mlx-lm v0.31.3 (Copyright © 2023-2026 Apple Inc.), under MIT.
+The MIT notice is preserved in licenses/mlx-lm-MIT.txt.
+https://github.com/ml-explore/mlx-lm
+
+Runtime dependencies retain their own licenses in deps/. Checkpoint files and
+the original Python experiment are kept separately from the native implementation.
+
+KnowLine Gen5.5 prompt layout and label-probability response semantics are
+adapted from PelaAI's knowline_server.py and knowline_layout.py, MIT licensed.
+The reference source files identify the rendering/scoring code as adapted from
+llm2jev (MIT, Copyright (c) 2026 AnyJev contributors). See
+licenses/KnowLine-MIT.txt. Downloaded model weights retain their Apache-2.0
+LICENSE in the model directory.
+https://huggingface.co/PelaAI/KnowLine-4B-Gen5.5
+https://huggingface.co/Liamariel/knowline-4b-gen5.5-mlx-q5

@@ -1,0 +1,70 @@
+#!/bin/sh
+set -eu
+
+knowline_project_dir=$(cd "$(dirname "$0")/.." && pwd)
+knowline_label=com.camonz.knowline
+knowline_domain="gui/$(id -u)"
+knowline_service="$knowline_domain/$knowline_label"
+knowline_plist="$HOME/Library/LaunchAgents/$knowline_label.plist"
+knowline_logs="$HOME/Library/Logs/KnowLine"
+
+start_service() {
+  if [ ! -f "$knowline_plist" ]; then
+    echo "Install first: $knowline_project_dir/bin/knowline-service install" >&2
+    exit 1
+  fi
+  launchctl enable "$knowline_service"
+  if launchctl print "$knowline_service" >/dev/null 2>&1; then
+    launchctl kickstart "$knowline_service"
+  else
+    launchctl bootstrap "$knowline_domain" "$knowline_plist"
+  fi
+  echo "KnowLine service started; check http://127.0.0.1:46292/health for readiness."
+}
+
+case "${1:-status}" in
+  install)
+    cd "$knowline_project_dir"
+    MIX_ENV=prod mix compile --warnings-as-errors
+    mkdir -p "$HOME/Library/LaunchAgents" "$knowline_logs"
+    plutil -lint "$knowline_project_dir/launchd/$knowline_label.plist"
+    cp "$knowline_project_dir/launchd/$knowline_label.plist" "$knowline_plist"
+    chmod 644 "$knowline_plist"
+    start_service
+    ;;
+  start)
+    start_service
+    ;;
+  stop)
+    # Disabling also prevents it from returning at the next login.
+    launchctl disable "$knowline_service"
+    if launchctl print "$knowline_service" >/dev/null 2>&1; then
+      launchctl bootout "$knowline_service"
+    fi
+    echo "KnowLine stopped; automatic login startup disabled until you run start."
+    ;;
+  restart)
+    launchctl enable "$knowline_service"
+    if launchctl print "$knowline_service" >/dev/null 2>&1; then
+      launchctl kickstart -k "$knowline_service"
+    else
+      start_service
+    fi
+    ;;
+  status)
+    if launchctl print "$knowline_service" >/dev/null 2>&1; then
+      launchctl print "$knowline_service" | sed -n '/state =/p; /pid =/p; /last exit code =/p'
+      curl --fail --silent --show-error --max-time 5 http://127.0.0.1:46292/health
+      echo
+    else
+      echo "KnowLine is stopped."
+    fi
+    ;;
+  logs)
+    tail -n 40 "$knowline_logs/stdout.log" "$knowline_logs/stderr.log"
+    ;;
+  *)
+    echo "Usage: $0 {install|start|stop|restart|status|logs}" >&2
+    exit 2
+    ;;
+esac

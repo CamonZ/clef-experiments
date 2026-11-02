@@ -1,0 +1,70 @@
+#!/bin/sh
+set -eu
+
+clef_project_dir=$(cd "$(dirname "$0")/.." && pwd)
+clef_label=com.camonz.clef
+clef_domain="gui/$(id -u)"
+clef_service="$clef_domain/$clef_label"
+clef_plist="$HOME/Library/LaunchAgents/$clef_label.plist"
+clef_logs="$HOME/Library/Logs/Clef"
+
+start_service() {
+  if [ ! -f "$clef_plist" ]; then
+    echo "Install first: $clef_project_dir/bin/clef-service install" >&2
+    exit 1
+  fi
+  launchctl enable "$clef_service"
+  if launchctl print "$clef_service" >/dev/null 2>&1; then
+    launchctl kickstart "$clef_service"
+  else
+    launchctl bootstrap "$clef_domain" "$clef_plist"
+  fi
+  echo "Clef service started; check http://127.0.0.1:46291/health for readiness."
+}
+
+case "${1:-status}" in
+  install)
+    cd "$clef_project_dir"
+    MIX_ENV=prod mix compile --warnings-as-errors
+    mkdir -p "$HOME/Library/LaunchAgents" "$clef_logs"
+    plutil -lint "$clef_project_dir/launchd/$clef_label.plist"
+    cp "$clef_project_dir/launchd/$clef_label.plist" "$clef_plist"
+    chmod 644 "$clef_plist"
+    start_service
+    ;;
+  start)
+    start_service
+    ;;
+  stop)
+    # Disabling also prevents it from returning at the next login.
+    launchctl disable "$clef_service"
+    if launchctl print "$clef_service" >/dev/null 2>&1; then
+      launchctl bootout "$clef_service"
+    fi
+    echo "Clef stopped; automatic login startup disabled until you run start."
+    ;;
+  restart)
+    launchctl enable "$clef_service"
+    if launchctl print "$clef_service" >/dev/null 2>&1; then
+      launchctl kickstart -k "$clef_service"
+    else
+      start_service
+    fi
+    ;;
+  status)
+    if launchctl print "$clef_service" >/dev/null 2>&1; then
+      launchctl print "$clef_service" | sed -n '/state =/p; /pid =/p; /last exit code =/p'
+      curl --fail --silent --show-error --max-time 5 http://127.0.0.1:46291/health
+      echo
+    else
+      echo "Clef is stopped."
+    fi
+    ;;
+  logs)
+    tail -n 40 "$clef_logs/stdout.log" "$clef_logs/stderr.log"
+    ;;
+  *)
+    echo "Usage: $0 {install|start|stop|restart|status|logs}" >&2
+    exit 2
+    ;;
+esac

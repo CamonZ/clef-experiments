@@ -1,0 +1,16 @@
+.venv/
+models/
+_build/
+deps/
+artifacts/
+erl_crash.dump
+.venv-download/
+.elixir_ls/
+__pycache__/
+*.py[cod]
+.DS_Store
+.env
+.env.*
+!.env.example
+*.pem
+*.key

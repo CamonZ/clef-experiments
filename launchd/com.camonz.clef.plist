@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.camonz.clef</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/camonz/Code/clef-experiments/bin/clef-server</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/camonz/Code/clef-experiments</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+  <key>ExitTimeOut</key>
+  <integer>30</integer>
+  <key>StandardOutPath</key>
+  <string>/Users/camonz/Library/Logs/Clef/stdout.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/camonz/Library/Logs/Clef/stderr.log</string>
+</dict>
+</plist>
